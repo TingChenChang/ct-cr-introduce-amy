@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>New Member Amy</title>
+<meta name="description" content="像素風自我介紹：CREATE NEW MEMBER + DATA QUALITY CHECK 兩真一假">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%2312101f'/%3E%3Crect x='4' y='2' width='8' height='3' fill='%232a1f1c'/%3E%3Crect x='4' y='5' width='8' height='5' fill='%23f1c7a0'/%3E%3Crect x='5' y='6' width='2' height='2' fill='%230b0b0e'/%3E%3Crect x='9' y='6' width='2' height='2' fill='%230b0b0e'/%3E%3Crect x='3' y='10' width='10' height='5' fill='%238fb3e8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700&display=swap">
+<style>
+/* Arcade cabinet: one 16:9 game screen running both stages, a shared control deck, then two collapsible "save files" */
+:root{
+  --bg:#0d0b18; --panel:#1a1630; --line:#4a3f86; --fg:#ece8ff; --dim:#9a91c9;
+  --gold:#ffcc33; --teal:#4fd1c5; --red:#ff5d73;
+  --f-pixel:"Press Start 2P","DotGothic16",ui-monospace,monospace;
+  --f-dot:"DotGothic16","Noto Sans TC",ui-monospace,monospace;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg);margin:0}
+body{font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+h1{font-family:var(--f-pixel);font-size:clamp(15px,2.6vw,22px);color:var(--gold);margin:0;letter-spacing:.04em;text-wrap:balance}
+header p{margin:0;color:var(--dim);font-family:var(--f-dot);font-size:15px}
+
+.tabs{display:flex;flex-wrap:wrap;gap:10px}
+.tab{font-family:var(--f-pixel);font-size:10px;line-height:1.5;color:var(--dim);background:transparent;border:0;padding:10px 12px;cursor:pointer;box-shadow:inset 0 0 0 3px var(--line);text-align:left}
+.tab b{color:var(--gold);font-weight:400;margin-right:6px}
+.tab[aria-selected=true]{color:#12101f;background:var(--teal);box-shadow:inset 0 0 0 3px #2b8f86}
+.tab[aria-selected=true] b{color:#12101f}
+
+.cab{position:relative;background:#000;padding:10px;box-shadow:0 0 0 4px var(--line),0 0 0 8px var(--panel),0 0 0 12px var(--line)}
+.cab:fullscreen{display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none}
+canvas{display:block;width:100%;max-width:100%;aspect-ratio:16/9;image-rendering:pixelated;background:#12101f}
+.cab:fullscreen canvas{width:auto;height:100%;max-height:100vh}
+
+.deck{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}
+.btn{font-family:var(--f-pixel);font-size:11px;color:var(--fg);background:var(--panel);border:0;padding:12px 14px;cursor:pointer;box-shadow:inset 0 0 0 3px var(--line);white-space:nowrap}
+.btn:hover{color:var(--gold)}
+.btn.primary{background:var(--gold);color:#12101f;box-shadow:inset 0 0 0 3px #b8860b;min-width:9.5em}
+.btn.primary:hover{color:#12101f;filter:brightness(1.08)}
+.btn.primary:disabled{background:var(--panel);color:var(--dim);box-shadow:inset 0 0 0 3px var(--line);cursor:default;filter:none}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,canvas:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.mid{flex:1 1 220px;display:flex;align-items:center;gap:10px;min-width:0}
+.time,.status{font-family:var(--f-pixel);font-size:10px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.status{white-space:normal;line-height:1.8}
+.status b{color:var(--teal);font-weight:400}
+.dots{display:flex;gap:6px}
+.dots i{width:12px;height:12px;background:var(--line);display:block}
+.dots i.on{background:var(--gold)}
+.dots i.done{background:var(--teal)}
+
+.tip{font-family:var(--f-dot);color:var(--dim);font-size:14px;background:var(--panel);padding:12px 14px;box-shadow:inset 0 0 0 2px var(--line)}
+.tip b{color:var(--teal);font-weight:400}
+.tip p{margin:0}.tip p+p{margin-top:6px}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CREATE NEW MEMBER</h1>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="關卡">
+    <button class="tab" role="tab" id="tab1" aria-selected="true"><b>STAGE 1</b>CREATE NEW MEMBER</button>
+    <button class="tab" role="tab" id="tab2" aria-selected="false"><b>STAGE 2</b>DATA QUALITY CHECK</button>
+  </div>
+
+  <div class="cab" id="cab">
+    <canvas id="stage" tabindex="0" aria-label="遊戲畫面。按 Enter 進入下一段"></canvas>
+  </div>
+
+  <div class="deck">
+    <button class="btn" id="prev">◀ 上一步</button>
+    <button class="btn primary" id="next">下一步 ▶</button>
+    <div class="mid"><span class="dots" id="dots" aria-hidden="true"></span><span class="status" id="status" aria-live="polite"></span></div>
+    <button class="btn" id="snd" aria-pressed="true">♪ ON</button>
+    <button class="btn" id="fs">⛶ 全螢幕</button>
+    <button class="btn" id="reset">↺ 重設</button>
+  </div>
+
+  <div class="tip">
+    <p><b>操作：</b>按 <b>Enter</b> 進入下一段（簡報筆的 <b>→ / PageDown</b> 也可以），<b>←</b> 上一段，<b>R</b> 回到起始畫面，<b>F</b> 全螢幕。</p>
+  </div>
+
+</div>
+
+<script>
+(()=>{
+/* ================= shared: canvas, palette, helpers, audio ================= */
+const W=1280,H=720;
+const cv=document.getElementById('stage');cv.width=W;cv.height=H;
+const ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;
+const PIX='"Press Start 2P","DotGothic16",monospace';
+const DOT='"DotGothic16","Press Start 2P",monospace';
+const C={bg:'#12101f',panel:'#1e1a33',line:'#5b4f99',fg:'#ece8ff',dim:'#8d84bd',gold:'#ffcc33',teal:'#4fd1c5',red:'#ff5d73',green:'#7ee787'};
+/* ================= 內容設定：要改文字就改這裡 ================= */
+const DATA={
+  // STAGE 1 · 角色資料
+  name:'張庭禎 Amy', mbti:'ISFJ', zodiac:'獅子座', cls:'資料分析師', home:'新北', food:'韓式料理',
+  hobbies:['追劇','旅遊'], music:'KPOP',
+  hairstyle:3,            // 0 短髮 · 1 長髮 · 2 帽子 · 3 短髮中分劉海
+  glasses:true,           // 黑框眼鏡
+  hair:'#2a1f1c', skin:'#f1c7a0', shirt:'#c9ccd3', tee:'#f7f7f5', pants:'#1b1b1f',  // 淺灰襯衫 · 白T · 黑褲
+  fact:'最近一週完食 47 集美劇 <Hacks>，1-5 季都非常好看，真心推薦！！！',
+  // GOD MODE 屬性點：名稱 · 點數 1–5 · 上帝的台詞
+  stats:[
+    {n:'體力',  v:2,c:'體力先給 2 點就好，反正以後都坐著'},
+    {n:'好奇心',v:4,c:'好奇心多加一點，讓他整天問為什麼'},
+    {n:'計劃力',v:4,c:'計劃表排得很漂亮，執行就看當天心情'},
+    {n:'記憶力',v:2,c:'記憶力 2。等等，我剛剛在幹嘛？'},
+    {n:'共感力',v:5,c:'…手滑拉滿了，算了就這樣吧'},
+    {n:'社交',  v:1,c:'社交點數…剛好用完了，先給 1'}],
+  // STAGE 2 · 兩真一假，依序出題。每題三句，fake = 假的那一句（0 = 第一句）
+  rounds:[
+    {name:'旅遊篇', table:'amy.travel', fake:1, facts:[
+      '第一次搭長途飛機，才到第一個轉機點，就弄丟護照跟一半現金',
+      '下班正要回家，朋友打來問「你到機場了嗎？」才發現我記錯出國日期',
+      '因為跟團遇到太雷的導遊，團裡年紀最小的我自動被升級為副導遊']},
+    {name:'追劇篇', table:'amy.dramas', fake:0, facts:[
+      '為了不被暴雷《單身即地獄》大結局，請假半天回家等上線',
+      '看完《黑白大廚》買了多功能食材處理器，開箱 5 秒就刮到手血流如注',
+      '因為看《Hacks》太感動，在捷運上啜泣哭到口罩濕透']},
+  ],
+  outro:'我叫 Amy，今天結束你可能不記得我是誰沒關係，但請記得《Hacks》真的很好看！',
+};
+
+
+function text(s,x,y,size,col,align='left',font=DOT){ctx.font=`${size}px ${font}`;ctx.fillStyle=col;ctx.textAlign=align;ctx.textBaseline='alphabetic';ctx.fillText(s,x,y)}
+function shadowText(s,x,y,size,col,align,font){text(s,x+4,y+4,size,'#000',align,font);text(s,x,y,size,col,align,font)}
+function scan(){ctx.fillStyle='rgba(0,0,0,.18)';for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,2)}
+function flash(a,col='255,255,255'){if(a>0){ctx.fillStyle=`rgba(${col},${clamp(a)})`;ctx.fillRect(0,0,W,H)}}
+function shade(hex,k){const n=parseInt(hex.slice(1),16);const f=v=>Math.min(255,Math.round(v*k));return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`}
+function wrap(s,maxW,size,font=DOT){ctx.font=`${size}px ${font}`;const out=[];let line='';for(const ch of Array.from(s||'')){if(ctx.measureText(line+ch).width>maxW&&line){out.push(line);line=ch}else line+=ch}if(line)out.push(line);return out}
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,p)=>a+(b-a)*clamp(p);
+const easeOut=p=>1-Math.pow(1-clamp(p),3);
+const easeBack=p=>{p=clamp(p);const c=1.9;return 1+(c+1)*Math.pow(p-1,3)+c*Math.pow(p-1,2)};
+const BASE=[
+'....HHHHHHHH....','...HHHHHHHHHH...','..HHHHHHHHHHHH..','..HHSSSSSSSSHH..',
+'..HSSSSSSSSSSH..','..HSSESSSSESSH..','..HSSESSSSESSH..','...SSSSSSSSSS...',
+'...SSSSMMSSSS...','....SSSSSSSS....','.....SSSSSS.....','...TTTTTTTTTT...',
+'..TTTTTTTTTTTT..','.TTTTTTTTTTTTTT.','.SSTTTTTTTTTTSS.','.SSTTTTTTTTTTSS.',
+'.SS.TTTTTTTT.SS.','....TTTTTTTT....','....PPPPPPPP....','....PPP..PPP....',
+'....PPP..PPP....','....PPP..PPP....','...BBBB..BBBB...','...BBBB..BBBB...'];
+
+let ac=null,soundOn=true;
+function audio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(e){ac=null}}
+function blip(f,d=.06,at=0,type='square',v=.05){if(!soundOn||!ac)return;const t0=ac.currentTime+at;const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g).connect(ac.destination);o.start(t0);o.stop(t0+d+.02)}
+const seq=(notes,step=.09,d=.08,type='square')=>notes.forEach((f,i)=>blip(f,d,i*step,type));
+
+/* ================= STAGE 1 · CREATE NEW MEMBER (timeline, ~42s) ================= */
+const intro=(()=>{
+const DUR=42;
+const TL={load:3,ava:5,stat:9.2,conf:15.5,meme:18,mstat:19.2,mstep:1.7,stamp:29.6,join:31,card:35.5};
+const D=DATA;let EV=[];
+const fontText=()=>JSON.stringify(D)+'確認建立角色？請多指教！上帝在創造我的時候：哈啾點數不足完成先出貨有再說品質大概可以總點數剩下的請自己練屬性雷達短髮中分劉海長髮帽子黑框眼鏡墨鏡耳機花圈無襯衫配件載入';
+
+/* ---------- sprites ---------- */
+function playerGrid(style,blink){
+  const g=BASE.map(r=>r.padEnd(16,'.').split(''));
+  if(style===1){for(let r=4;r<=12;r++)for(const c of [1,2,13,14])if(g[r][c]==='.'||g[r][c]==='H')g[r][c]='H'}
+  if(style===2){for(let r=0;r<2;r++)for(let c=0;c<16;c++)if(g[r][c]==='H')g[r][c]='C';for(let c=1;c<=14;c++)g[2][c]='C'}
+  if(style===3){ // short hair, center-parted bangs
+    for(let c=3;c<=12;c++)if(c!==7&&c!==8)g[3][c]='H';
+    for(const c of [3,4,11,12])g[4][c]='H';
+    g[2][7]='h';g[2][8]='h';
+  }
+  g[11][5]=g[11][6]=g[11][9]=g[11][10]='L';g[11][7]=g[11][8]='S';g[12][6]=g[12][9]='L';
+  for(let r=12;r<=17;r++)g[r][7]=g[r][8]='W'; // open shirt shows the white tee
+  if(blink)for(const r of g)for(let c=0;c<16;c++)if(r[c]==='E')r[c]='S';
+  return g;
+}
+const GOD=[
+'.....YYYYYY.....','....Y......Y....','.....YYYYYY.....','.....WWWWWW.....',
+'....WSSSSSSW....','....WSESSESW....','....WSSSSSSW....','....WWWWWWWW....',
+'...WWWWMMWWWW...','...WWWWWWWWWW...','....WWWWWWWW....','.....WWWWWW.....',
+'...RRRRRRRRRR...','..RRRRRRRRRRRR..','.SRRRRRRRRRRRRS.','.SRRRRGGGGRRRRS.',
+'..RRRRRRRRRRRR..','..RRRRRRRRRRRR..','..RRRRRRRRRRRR..','.RRRRRRRRRRRRRR.','.RRRRRRRRRRRRRR.'];
+function drawGrid(g,pal,x,y,s,sil){for(let r=0;r<g.length;r++)for(let c=0;c<g[r].length;c++){const k=g[r][c];if(k==='.')continue;ctx.fillStyle=sil||pal[k];ctx.fillRect(x+c*s,y+r*s,s,s)}}
+function drawSprite(x,y,s,o={}){
+  const g=playerGrid(o.style??D.hairstyle,o.blink);
+  const hair=o.hair||D.hair,shirt=o.shirt||D.shirt;
+  const pal={H:hair,h:shade(hair,1.7),S:D.skin,E:'#1a1626',M:'#c0485a',T:shirt,L:'#f4f6fb',K:shade(shirt,.55),W:D.tee,P:D.pants,B:'#0a0a0d',C:shade(shirt,.7)};
+  drawGrid(g,pal,x,y,s,o.sil);
+  if(o.sil)return;
+  if(o.glasses??D.glasses){
+    const k=Math.max(2,Math.round(s*.22));ctx.fillStyle='#0b0b0e';
+    for(const ec of [5,10]){const lx=x+(ec-1)*s+s*.35,ly=y+4*s+s*.45,lw=3*s-s*.7,lh=3*s+s*.1;
+      ctx.fillRect(lx,ly,lw,k);ctx.fillRect(lx,ly+lh-k,lw,k);ctx.fillRect(lx,ly,k,lh);ctx.fillRect(lx+lw-k,ly,k,lh)}
+    ctx.fillRect(x+6.65*s,y+5.2*s,2.7*s,k);ctx.fillRect(x+3*s,y+5.2*s,1.35*s,k);ctx.fillRect(x+11.65*s,y+5.2*s,1.35*s,k)}
+  if(o.cup){
+    ctx.fillStyle='#f4efe6';ctx.fillRect(x+15*s,y+13*s,2*s,3*s);ctx.fillRect(x+17*s,y+14*s,s*.6,s);
+    ctx.fillStyle='#7a4b2a';ctx.fillRect(x+15*s,y+13*s,2*s,s*.5);
+    if(o.steam!=null){ctx.fillStyle='rgba(255,255,255,.55)';const ph=Math.floor(o.steam*4)%2;ctx.fillRect(x+(15+ph)*s,y+11.5*s,s*.5,s);ctx.fillRect(x+(16-ph)*s,y+10.5*s,s*.5,s)}
+  }
+}
+
+/* ---------- helpers ---------- */
+const stars=[];let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+for(let i=0;i<90;i++)stars.push([rnd()*W,rnd()*H,rnd()<.2?4:2,rnd()*6]);
+const conf=[];for(let i=0;i<70;i++)conf.push([rnd()*W,rnd()*H,rnd()*3+2,[C.gold,C.teal,C.red,C.green,'#b28dff'][i%5],rnd()*6]);
+const clouds=[];for(let i=0;i<9;i++)clouds.push([rnd()*W,560+rnd()*90,80+rnd()*120,rnd()]);
+function memeText(s,x,y,size){ctx.font=`${size}px ${DOT}`;ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=10;ctx.strokeStyle='#000';ctx.strokeText(s,x,y);ctx.fillStyle='#fff';ctx.fillText(s,x,y)}
+function panel(x,y,w,h,title){
+  ctx.fillStyle=C.line;ctx.fillRect(x,y,w,h);ctx.fillStyle=C.panel;ctx.fillRect(x+4,y+4,w-8,h-8);
+  ctx.fillStyle='#2a2446';ctx.fillRect(x+8,y+8,w-16,4);
+  if(title){ctx.font=`14px ${PIX}`;const tw=ctx.measureText(title).width;ctx.fillStyle=C.panel;ctx.fillRect(x+20,y-8,tw+20,20);text(title,x+30,y+8,14,C.teal,'left',PIX)}
+}
+let typedTotal=0;
+function typed(s,t,t0,dur){const a=Array.from(s||'');const n=Math.floor(clamp((t-t0)/dur)*a.length);typedTotal+=n;return a.slice(0,n).join('')}
+function fit(s,maxW,size){const l=wrap(s,maxW,size);return l.length>1?l[0].slice(0,-1)+'…':(l[0]||'')}
+function bg(t){
+  ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);
+  for(const [x,y,s,p] of stars){if(Math.sin(t*2+p)<=-.3)continue;ctx.fillStyle=s>2?'#6f63b5':'#3d3570';ctx.fillRect(Math.floor(x),Math.floor((y+t*12*(s/2))%H),s,s)}
+  ctx.fillStyle='#1a1530';ctx.fillRect(0,H-70,W,70);ctx.fillStyle='#2b2450';
+  for(let i=-1;i<22;i++)ctx.fillRect(i*64-(t*40)%64,H-70,4,70);
+  ctx.fillRect(0,H-70,W,4);
+}
+
+/* ---------- scene: title / load ---------- */
+function sceneTitle(t,idle){
+  shadowText('PLAYER SELECT',W/2,190,18,C.dim,'center',PIX);
+  shadowText('CREATE NEW',W/2,300,56,C.gold,'center',PIX);
+  shadowText('MEMBER',W/2,380,56,C.gold,'center',PIX);
+  text('dept.member  ·  ver 2026.10',W/2,440,20,C.teal,'center',DOT);
+  if(idle||t<2.4){if(Math.floor(t/.4)%2===0)shadowText('PRESS ENTER',W/2,540,22,C.fg,'center',PIX)}
+  else shadowText('START!',W/2,540,26,C.green,'center',PIX);
+  drawSprite(W/2-32,570,4,{sil:'#2e2752'});
+  if(!idle)flash(t>2.4&&t<2.7?(.8-(t-2.4)*2.6):0);
+}
+function sceneLoad(t){
+  const p=clamp((t-3)/1.8);
+  shadowText('LOADING PLAYER DATA...',W/2,300,24,C.fg,'center',PIX);
+  const bx=W/2-300,by=340;ctx.fillStyle=C.line;ctx.fillRect(bx,by,600,52);ctx.fillStyle='#000';ctx.fillRect(bx+6,by+6,588,40);
+  const n=Math.floor(p*20);for(let i=0;i<n;i++){ctx.fillStyle=i>16?C.green:C.gold;ctx.fillRect(bx+10+i*29.2,by+10,24,32)}
+  text(Math.floor(p*100)+'%',W/2,440,20,C.gold,'center',PIX);
+  text('TIP：SELECT * FROM me 掃描量有點大，請耐心等候',W/2,520,22,C.dim,'center',DOT);
+}
+
+/* ---------- scene: avatar + status + confirm ---------- */
+const HAIRN={0:'短髮',1:'長髮',2:'帽子',3:'中分劉海'};
+function chips(x,y,list,t,size=20){
+  list.forEach((s,i)=>{if(!s)return;const font=i===0?PIX:DOT,sz=i===0?size:size+4;ctx.font=`${sz}px ${font}`;const w=ctx.measureText(s).width;
+    ctx.fillStyle=i===0?C.teal:C.gold;ctx.fillRect(x,y,w+22,38);text(s,x+11,y+29,sz,'#12101f','left',font);x+=w+36});
+  return x;
+}
+function sceneCreate(t){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,64);ctx.fillStyle=C.line;ctx.fillRect(0,60,W,4);
+  text('PLAYER CREATION',32,42,20,C.gold,'left',PIX);
+  const step=t<TL.stat?1:t<TL.conf?2:3;text(`STEP ${step}/3`,W-32,42,16,C.dim,'right',PIX);
+  panel(36,96,500,580,'AVATAR');
+  const s=13,sx=36+250-8*s,sy=150;
+  ctx.fillStyle='#14112a';ctx.fillRect(sx-30,sy+24*s-6,16*s+60,14);
+  const style=t<8?[0,1,2,3][Math.floor((t-6)*5)%4]:D.hairstyle;
+  const sc=['#4fd1c5','#ffcc33','#ff5d73','#f4f6fb'];
+  const shirt=t<8.6?sc[Math.floor(t*6)%4]:D.shirt;
+  const accCyc=['墨鏡','耳機','花圈'];
+  const accName=t<9?accCyc[Math.floor(t*6)%3]:(D.glasses?'黑框眼鏡':'無');
+  const bob=t>9.2?(Math.floor(t*2)%2)*4:0,blink=(t%3)<.12;
+  if(t>=5.4&&t<6)drawSprite(sx,sy,s,{sil:'#3d3570'});
+  else if(t>=6)drawSprite(sx,sy+bob,s,{style:Math.max(0,style),shirt,blink,glasses:t>=9&&D.glasses,cup:t>9.2,steam:t});
+  const rows=[['HAIR',HAIRN[style]??'',6,8],['SHIRT',null,8,8.6],['ACC',accName,8.6,9]];
+  rows.forEach(([lab,val,a,b],i)=>{
+    const y=520+i*48,act=t>=a&&t<b+.25,bl=act&&Math.floor(t*6)%2;
+    if(act){ctx.fillStyle='#2e2752';ctx.fillRect(60,y-30,452,42)}
+    text(lab,76,y,14,act?C.gold:C.dim,'left',PIX);
+    text('◀',250,y,18,bl?C.gold:C.dim,'left',DOT);
+    if(val!=null)text(val,345,y,22,C.fg,'center',DOT);
+    else{ctx.fillStyle=shirt;ctx.fillRect(300,y-24,90,30);ctx.fillStyle='#f4f6fb';ctx.fillRect(330,y-24,10,12);ctx.fillRect(350,y-24,10,12)}
+    text('▶',430,y,18,bl?C.gold:C.dim,'left',DOT);
+  });
+  panel(568,96,676,580,'STATUS');
+  const L=600,V=760;
+  const row=(lab,val,t0,y,size=24,col=C.fg)=>{if(t<t0)return;text(lab,L,y,13,C.dim,'left',PIX);text(typed(fit(val,450,size),t,t0,.45),V,y+2,size,col,'left',DOT)};
+  if(t>=TL.stat){text('NAME',L,160,13,C.dim,'left',PIX);text(typed(D.name,t,TL.stat,.5),V,166,34,C.gold,'left',DOT);if(t>9.7)text('LV 1',1210,162,14,C.green,'right',PIX)}
+  if(t>=9.8){text('TYPE',L,216,13,C.dim,'left',PIX);chips(V,190,t>=10.1?[D.mbti,D.zodiac]:[D.mbti],t)}
+  row('CLASS',D.cls,10.4,272);row('FROM',D.home,11,326);row('HOBBY',D.hobbies.join(' / '),11.6,380,22);
+  row('MUSIC',D.music,12.2,434);row('FOOD',D.food,12.8,488);
+  if(t>=13.4){text('TMI',L,544,13,C.dim,'left',PIX);
+    wrap(typed(D.fact,t,13.4,1.4),450,22).slice(0,3).forEach((ln,i)=>text(ln,V,544+i*30,22,C.teal,'left',DOT))}
+  if(t>=TL.conf){
+    ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0,W,H);
+    const bw=640,bh=260,bx=(W-bw)/2,by=(H-bh)/2;panel(bx,by,bw,bh);
+    text('確認建立角色？',W/2,by+80,34,C.fg,'center',DOT);
+    text('CREATE TABLE dept.new_member',W/2,by+122,14,C.dim,'center',PIX);
+    const sel=t<16.6?'NO':'YES',chosen=t>=17.2;
+    const opt=(lab,x)=>{const on=sel===lab;if(on&&chosen&&Math.floor(t*12)%2)return;text((on?'▶ ':'  ')+lab,x,by+200,24,on?C.gold:C.dim,'center',PIX)};
+    opt('YES',W/2-120);opt('NO',W/2+120);
+    if(t>=16&&t<16.6)text('…？',W/2+200,by+170,22,C.red,'left',DOT);
+    flash(t>17.5?(t-17.5)*2.2:0);
+  }
+}
+
+/* ---------- scene: god meme ---------- */
+const TRK={x0:610,dx:110,y0:390,y1:590};
+function knob(i,t){
+  const st=D.stats[i],v=st.v,lt=t-(TL.mstat+i*TL.mstep);
+  if(lt<0)return 0;
+  if(v>=5){if(lt<.45)return lerp(0,1.4,lt/.45);if(lt<.6)return lerp(1.4,5,(lt-.45)/.15);return 5}
+  if(v<=1){if(lt<.5)return 3*easeOut(lt/.5);if(lt<.85)return lerp(3,1,(lt-.5)/.35);return 1}
+  return lt<.8?v*easeBack(lt/.8):v;
+}
+function sceneMeme(t){
+  const lt=t-TL.meme;
+  const idx=Math.floor((t-TL.mstat)/TL.mstep),act=idx>=0&&idx<6?idx:-1,alt=act>=0?t-(TL.mstat+act*TL.mstep):0;
+  const st=act>=0?D.stats[act]:null;
+  const sneeze=st&&st.v>=5&&alt>.42&&alt<1.1;
+  ctx.save();if(sneeze&&alt<.8)ctx.translate((Math.random()-.5)*16,(Math.random()-.5)*16);
+  const bands=['#2b2a6e','#3a3687','#5146a0','#6e57b3','#8e6bc2'];
+  bands.forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(0,i*H/5,W,H/5+1)});
+  for(let i=0;i<12;i++){ctx.fillStyle='rgba(255,230,150,.08)';ctx.fillRect(200+i*14,0,8,H)}
+  for(const [x,y,w,p] of clouds){const xx=(x+lt*14*(p+.3))%(W+200)-100;ctx.fillStyle='#e9e3ff';ctx.fillRect(xx,y,w,40);ctx.fillRect(xx+20,y-20,w-40,20);ctx.fillStyle='#cfc4f2';ctx.fillRect(xx,y+30,w,10)}
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,96);
+  memeText(typed('上帝在創造我的時候：',t,TL.meme+.1,.8),W/2,68,48);
+  const gs=13,gx=90,gy=300+Math.sin(lt*2)*6;
+  const gpal={Y:C.gold,W:'#ffffff',S:'#f1c7a0',E:'#1a1626',M:'#d9a0a0',R:'#ddd6f7',G:C.gold};
+  const ggrid=GOD.map(r=>r.split(''));if((t%2.6)<.12)for(const r of ggrid)for(let c=0;c<16;c++)if(r[c]==='E')r[c]='S';
+  ctx.fillStyle='#f3efff';ctx.fillRect(gx-40,gy+21*gs-10,16*gs+80,46);ctx.fillRect(gx-10,gy+21*gs-30,16*gs+20,20);
+  drawGrid(ggrid,gpal,gx+(sneeze?-8:0),gy+(sneeze?6:0),gs);
+  text('GOD.exe',gx+8*gs,gy-14,12,C.gold,'center',PIX);
+  panel(560,330,670,320);
+  ctx.fillStyle='#14112a';ctx.fillRect(576,346,638,22);text('CHARACTER MIXER v1.0 · 屬性調配台',590,363,14,C.dim,'left',DOT);
+  D.stats.forEach((s,i)=>{
+    const x=TRK.x0+i*TRK.dx,v=knob(i,t),ky=TRK.y1-v*40;
+    for(let k=0;k<=5;k++){ctx.fillStyle='#3d3570';ctx.fillRect(x-22,TRK.y1-k*40,10,3)}
+    ctx.fillStyle='#000';ctx.fillRect(x-5,TRK.y0-6,10,TRK.y1-TRK.y0+12);
+    ctx.fillStyle=i===act?C.gold:C.teal;ctx.fillRect(x-5,ky,10,TRK.y1-ky);
+    ctx.fillStyle=i===act?C.gold:'#cfc8f0';ctx.fillRect(x-24,ky-11,48,22);ctx.fillStyle='#12101f';ctx.fillRect(x-16,ky-2,32,4);
+    text(t>=TL.mstat+i*TL.mstep?String(Math.round(v)):'-',x,TRK.y0-14,16,i===act?C.gold:C.fg,'center',PIX);
+    text(s.n,x,628,18,i===act?C.gold:C.fg,'center',DOT);
+    if(s.v<=1&&i===act&&alt>.45&&alt<1.25&&Math.floor(t*8)%2){ctx.fillStyle=C.red;ctx.fillRect(x-62,ky-58,124,34);text('點數不足！',x,ky-34,18,'#fff','center',DOT)}
+  });
+  if(act>=0&&alt<1.3){
+    const hx=gx+15*gs,hy=gy+14*gs,tx=TRK.x0+act*TRK.dx-30,ty=TRK.y1-knob(act,t)*40;
+    const reach=easeOut(alt/.3),ex=lerp(hx,tx,reach),ey=lerp(hy,ty,reach),n=Math.max(1,Math.floor(Math.hypot(ex-hx,ey-hy)/12));
+    for(let k=0;k<=n;k++){ctx.fillStyle='#ddd6f7';ctx.fillRect(Math.round(lerp(hx,ex,k/n)/6)*6,Math.round(lerp(hy,ey,k/n)/6)*6,14,14)}
+    ctx.fillStyle='#f1c7a0';ctx.fillRect(ex-6,ey-10,22,22);
+  }
+  let say='',sayT=0;
+  if(act>=0){say=st.v>=5&&alt<.6?'這個嘛…':st.c;sayT=TL.mstat+act*TL.mstep+(st.v>=5&&alt>=.6?.6:0)}
+  else if(t>=TL.stamp-.2){say='完成！先出貨，有 bug 再說';sayT=TL.stamp-.2}
+  else if(t>=TL.mstat-.8){say='好，來捏一個新同事';sayT=TL.mstat-.8}
+  if(say){
+    const bx=330,by=118,bw=900,bh=96;ctx.fillStyle='#000';ctx.fillRect(bx-4,by-4,bw+8,bh+8);ctx.fillStyle='#fff';ctx.fillRect(bx,by,bw,bh);
+    for(let k=0;k<5;k++){ctx.fillStyle='#000';ctx.fillRect(bx-10-k*14,by+bh+k*14-4,26,22);ctx.fillStyle='#fff';ctx.fillRect(bx-6-k*14,by+bh+k*14-4,16,14)}
+    wrap(typed(say,t,sayT,.6),bw-48,28).slice(0,2).forEach((ln,i)=>text(ln,bx+24,by+42+i*36,28,'#12101f','left',DOT));
+  }
+  if(sneeze){const sz=Math.min(1,(alt-.42)*6);ctx.save();ctx.translate(gx+8*gs,gy-40);ctx.scale(sz,sz);memeText('哈啾！',0,0,72);ctx.restore()}
+  if(t>=TL.stamp){
+    const p=clamp((t-TL.stamp)/.18),sc=lerp(2.4,1,p);
+    ctx.save();ctx.translate(890,470);ctx.rotate(-.18);ctx.scale(sc,sc);ctx.globalAlpha=lerp(.2,1,p);
+    ctx.fillStyle='rgba(255,255,255,.88)';ctx.fillRect(-250,-90,500,180);
+    ctx.strokeStyle='#d6283f';ctx.lineWidth=10;ctx.strokeRect(-240,-80,480,160);
+    text('QA PASSED',0,-8,40,'#d6283f','center',PIX);text('品質：大概可以',0,48,30,'#d6283f','center',DOT);
+    ctx.restore();
+  }
+  ctx.restore();
+  flash(lt<.35?.9-lt*2.6:0);
+  flash(t>30.6?(t-30.6)*2.4:0);
+}
+
+/* ---------- scene: joined ---------- */
+function sceneDone(t){
+  const tt=t-TL.join;
+  for(const [x,y,s,c,p] of conf){ctx.fillStyle=c;ctx.fillRect(Math.floor(x+Math.sin(t*2+p)*20),Math.floor((y+tt*160)%H),s*2,s*2)}
+  const jump=Math.abs(Math.sin(tt*4))*30*Math.max(0,1-tt/3);
+  drawSprite(150,190-jump,16,{blink:(t%3)<.12,cup:true,steam:t});
+  shadowText('NEW MEMBER',540,200,44,C.gold,'left',PIX);
+  shadowText('JOINED THE TEAM!',540,262,30,C.gold,'left',PIX);
+  if(tt>.5){ctx.fillStyle='#000';ctx.fillRect(540,300,690,120);ctx.fillStyle=C.line;ctx.fillRect(540,300,690,4);
+    text(typed('✔ Table dept.new_member created.',t,TL.join+.6,.8),564,346,18,C.green,'left',PIX);
+    text(typed('1 row inserted · 0 errors · '+D.name,t,TL.join+1.4,.7),564,390,20,C.dim,'left',DOT)}
+  if(tt>2.1){const sc=Math.min(1,(tt-2.1)*4);ctx.save();ctx.translate(540,520);ctx.scale(sc,sc);shadowText('請多指教！',0,0,64,C.fg,'left',DOT);ctx.restore()}
+  flash(tt<.3?.7-tt*2.3:0);
+  flash(tt>4.2?(tt-4.2)*3:0);
+}
+
+/* ---------- scene: player card + radar ---------- */
+function sceneCard(t){
+  const lt=t-TL.card;
+  ctx.save();ctx.globalAlpha=clamp(lt/.4);
+  const cx=lerp(-60,0,easeOut(lt/.5));ctx.translate(cx,0);
+  panel(40,40,560,640,'PLAYER CARD');
+  ctx.fillStyle='#14112a';ctx.fillRect(60,70,180,250);
+  drawSprite(78,90,9,{blink:(t%3)<.12,cup:true,steam:t});
+  text(fit(D.name,320,36),262,128,36,C.gold,'left',DOT);
+  chips(262,150,[D.mbti,D.zodiac],t,18);
+  text(fit(D.cls,320,24),262,234,24,C.fg,'left',DOT);
+  text('LV 1 · NEW',262,276,14,C.green,'left',PIX);
+  ctx.fillStyle=C.line;ctx.fillRect(60,334,520,4);
+  [['FROM',D.home],['HOBBY',D.hobbies.join(' / ')],['MUSIC',D.music],['FOOD',D.food]].forEach(([l,v],i)=>{
+    const y=380+i*46;text(l,70,y,12,C.dim,'left',PIX);text(fit(v,370,22),200,y+2,22,C.fg,'left',DOT)});
+  text('TMI',70,568,12,C.dim,'left',PIX);
+  wrap(D.fact,370,20).slice(0,3).forEach((ln,i)=>text(ln,200,568+i*28,20,C.teal,'left',DOT));
+  text('dept.new_member · row 1',70,656,11,C.dim,'left',PIX);
+  ctx.translate(-cx,0);
+  panel(630,40,610,640,'STATS');
+  const ox=935,oy=350,R=180,n=6;
+  const ang=i=>-Math.PI/2+i*Math.PI*2/n,pt=(i,r)=>[ox+Math.cos(ang(i))*r,oy+Math.sin(ang(i))*r];
+  for(let lv=1;lv<=5;lv++){ctx.beginPath();for(let i=0;i<n;i++){const [x,y]=pt(i,R*lv/5);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();
+    ctx.strokeStyle=lv===5?C.line:'#332b5e';ctx.lineWidth=lv===5?4:2;ctx.stroke()}
+  for(let i=0;i<n;i++){const [x,y]=pt(i,R);ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(x,y);ctx.strokeStyle='#332b5e';ctx.lineWidth=2;ctx.stroke()}
+  const p=easeBack(clamp((lt-.7)/1.1));
+  if(lt>.7){ctx.beginPath();D.stats.forEach((s,i)=>{const [x,y]=pt(i,R*s.v/5*p);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();
+    ctx.fillStyle='rgba(79,209,197,.35)';ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=4;ctx.stroke();
+    D.stats.forEach((s,i)=>{const [x,y]=pt(i,R*s.v/5*p);ctx.fillStyle=C.gold;ctx.fillRect(x-7,y-7,14,14)})}
+  D.stats.forEach((s,i)=>{const [x,y]=pt(i,R+52);const on=lt>.7+i*.12;
+    text(s.n,x,y-2,22,on?C.fg:C.dim,'center',DOT);text(on?`${s.v}/5`:'-',x,y+24,14,s.v>=5?C.gold:s.v<=1?C.red:C.teal,'center',PIX)});
+  const tot=D.stats.reduce((a,s)=>a+s.v,0);
+  if(lt>2)text(`總點數 ${tot} / ${tot}`,ox,640,24,C.gold,'center',DOT);
+  ctx.restore();
+  if(lt>3.5&&Math.floor(t/.5)%2===0)text('NEXT STAGE ▶ Data Quality Check',W-40,H-14,13,C.teal,'right',PIX);
+  flash(lt<.3?.7-lt*2.3:0);
+}
+function render(t,idle){
+  typedTotal=0;bg(t);
+  if(idle||t<TL.load)sceneTitle(t,idle);else if(t<TL.ava)sceneLoad(t);else if(t<TL.meme)sceneCreate(t);
+  else if(t<TL.join)sceneMeme(t);else if(t<TL.card)sceneDone(t);else sceneCard(t);
+  scan();
+}
+
+/* ---------- sound cues ---------- */
+function buildEvents(){
+  EV=[[2.4,()=>seq([523,659,784,1046])],[4.9,()=>seq([784,1046],.07)],[6,()=>blip(330,.05)],[9.2,()=>blip(988,.05)],
+    [16.6,()=>blip(440,.05)],[17.2,()=>seq([880,1175],.06)],[18,()=>seq([523,784,1046,1318],.1,.18,'triangle')],
+    [TL.stamp,()=>{blip(90,.3,0,'square',.14);blip(60,.3,.02,'triangle',.14)}],
+    [TL.join,()=>seq([523,659,784,1046,784,1046],.12,.14)],[TL.join+2.1,()=>seq([784,988,1318],.08)],
+    [TL.card,()=>seq([659,784,988],.07)],[TL.card+.7,()=>seq([523,587,659,698,784,880],.09,.08,'triangle')]];
+  D.stats.forEach((s,i)=>{const t0=TL.mstat+i*TL.mstep;EV.push([t0,()=>blip(520+i*70,.06)]);
+    if(s.v>=5)EV.push([t0+.45,()=>{blip(900,.05,0,'sawtooth',.06);blip(300,.18,.05,'sawtooth',.06);seq([523,784,1046,1568],.05,.06)}]);
+    else if(s.v<=1)EV.push([t0+.5,()=>seq([392,370,349,311],.13,.15,'triangle')]);
+    else EV.push([t0+.5,()=>blip(660+s.v*80,.08)]);});
+}
+
+/* ---------- playback ----------
+   idle: title screen loops, waiting for Enter.
+   play: runs from "START!" through to the player card, then keeps animating the card (t keeps growing past DUR). */
+const GO=2.35; // just before the START! flash, so its jingle fires
+let idle=true,start=performance.now(),lastT=0,lastTyped=0,lastBlip=0,lastHair=-1,wasBusy=false,onChange=()=>{};
+function tick(now){
+  const t=(now-start)/1000;
+  if(idle){render(t,true);return}
+  for(const [et,fn] of EV)if(lastT<et&&t>=et)fn();
+  render(t);
+  if(t<DUR){
+    if(typedTotal>lastTyped&&now-lastBlip>45&&(t<TL.meme||t>TL.join)){blip(1100+Math.random()*300,.025,0,'square',.025);lastBlip=now}
+    if(typedTotal>lastTyped&&now-lastBlip>70&&t>=TL.meme&&t<TL.join){blip(700+Math.random()*120,.02,0,'triangle',.03);lastBlip=now}
+    if(t>6&&t<8){const h=Math.floor((t-6)*5)%4;if(h!==lastHair){blip(330+h*60,.03);lastHair=h}}
+  }
+  lastTyped=typedTotal;lastT=t;
+  const b=t<DUR;if(b!==wasBusy){wasBusy=b;onChange()}
+}
+function toTitle(){idle=true;start=performance.now();wasBusy=false}
+function play(){audio();idle=false;lastT=GO;lastTyped=0;lastHair=-1;start=performance.now()-GO*1000;wasBusy=true}
+// jump straight to the settled player card (used when going back from STAGE 2); no sounds replay
+function toCard(){idle=false;lastT=1e9;start=performance.now()-(DUR+1)*1000;wasBusy=false}
+
+buildEvents();
+return {fontText,tick,play,toTitle,toCard,
+  get D(){return D},get busy(){return !idle&&wasBusy},set onChange(f){onChange=f}};
+})();
+
+/* ================= STAGE 2 · DATA QUALITY CHECK (two truths one lie, one round per DATA.rounds entry) ================= */
+const dqc=(()=>{
+const R=DATA.rounds;
+// scene list: title, then (question, reveal) per round, then the final clean-up
+const SCENES=[{k:'title',name:'STAGE 2'}];
+R.forEach((r,q)=>SCENES.push({k:'vote',q,name:r.name+' 出題'},{k:'scan',q,name:r.name+' 答案'}));
+SCENES.push({k:'done',name:'清洗完成'});
+const fontText=()=>R.map(r=>r.name+r.facts.join('')).join('')+DATA.outro+'回合題猜對了幾題第下一題筆資料兩真一假找出髒資料哪一筆是請舉手投票資料清洗完成感謝大家幫忙請多指教掃描中刪除你覺得哪一筆是髒資料？請舉手！執行資料驗證中…下一步：清除髒資料三筆資料裡，有一筆是髒資料謝謝以後你猜對了嗎每';
+
+/* Amy sprite: same pixels as stage 1, same colours as DATA */
+function drawAmy(x,y,s,o={}){
+  const A=intro.D;
+  const g=BASE.map(r=>r.split(''));
+  for(let c=3;c<=12;c++)if(c!==7&&c!==8)g[3][c]='H';for(const c of [3,4,11,12])g[4][c]='H';g[2][7]=g[2][8]='h';
+  g[11][5]=g[11][6]=g[11][9]=g[11][10]='L';g[11][7]=g[11][8]='S';g[12][6]=g[12][9]='L';for(let r=12;r<=17;r++)g[r][7]=g[r][8]='W';
+  if(o.blink)for(const r of g)for(let c=0;c<16;c++)if(r[c]==='E')r[c]='S';
+  const pal={H:A.hair,h:shade(A.hair,1.7),S:A.skin,E:'#1a1626',M:'#c0485a',T:A.shirt,L:'#f4f6fb',K:shade(A.shirt,.55),W:A.tee,P:A.pants,B:'#0a0a0d'};
+  for(let r=0;r<g.length;r++)for(let c=0;c<16;c++){const k=g[r][c];if(k==='.')continue;ctx.fillStyle=pal[k];ctx.fillRect(x+c*s,y+r*s,s,s)}
+  const k=Math.max(2,Math.round(s*.22));ctx.fillStyle='#0b0b0e';
+  for(const ec of [5,10]){const lx=x+(ec-1)*s+s*.35,ly=y+4*s+s*.45,lw=3*s-s*.7,lh=3*s+s*.1;ctx.fillRect(lx,ly,lw,k);ctx.fillRect(lx,ly+lh-k,lw,k);ctx.fillRect(lx,ly,k,lh);ctx.fillRect(lx+lw-k,ly,k,lh)}
+  ctx.fillRect(x+6.65*s,y+5.2*s,2.7*s,k);ctx.fillRect(x+3*s,y+5.2*s,1.35*s,k);ctx.fillRect(x+11.65*s,y+5.2*s,1.35*s,k);
+  if(o.lens){ctx.fillStyle='#c9a227';ctx.fillRect(x+15*s,y+15*s,s,3*s);ctx.fillStyle='#0b0b0e';ctx.fillRect(x+14*s,y+11*s,3*s,s*.5);ctx.fillRect(x+14*s,y+14*s,3*s,s*.5);ctx.fillRect(x+14*s,y+11*s,s*.5,3.5*s);ctx.fillRect(x+16.5*s,y+11*s,s*.5,3.5*s);
+    ctx.fillStyle='rgba(180,230,255,.55)';ctx.fillRect(x+14.5*s,y+11.5*s,2*s,2.5*s)}
+}
+
+/* ---------- helpers ---------- */
+const stars=[];let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+for(let i=0;i<90;i++)stars.push([rnd()*W,rnd()*H,rnd()<.2?4:2,rnd()*6]);
+const conf=[];for(let i=0;i<70;i++)conf.push([rnd()*W,rnd()*H,rnd()*3+2,[C.gold,C.teal,C.red,C.green,'#b28dff'][i%5],rnd()*6]);
+function panel(x,y,w,h,title,col=C.line){
+  ctx.fillStyle=col;ctx.fillRect(x,y,w,h);ctx.fillStyle=C.panel;ctx.fillRect(x+4,y+4,w-8,h-8);
+  if(title){ctx.font=`14px ${PIX}`;const tw=ctx.measureText(title).width;ctx.fillStyle=C.panel;ctx.fillRect(x+20,y-8,tw+20,20);text(title,x+30,y+8,14,C.teal,'left',PIX)}
+}
+function typed(s,t,t0,dur){const a=Array.from(s||'');return a.slice(0,Math.floor(clamp((t-t0)/dur)*a.length)).join('')}
+function bg(t){
+  ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);
+  for(const [x,y,s,p] of stars){if(Math.sin(t*2+p)<=-.3)continue;ctx.fillStyle=s>2?'#6f63b5':'#3d3570';ctx.fillRect(Math.floor(x),Math.floor((y+t*12*(s/2))%H),s,s)}
+  ctx.fillStyle='#1a1530';ctx.fillRect(0,H-40,W,40);ctx.fillStyle='#2b2450';for(let i=-1;i<22;i++)ctx.fillRect(i*64-(t*40)%64,H-40,4,40);ctx.fillRect(0,H-40,W,4);
+}
+function headerBar(right){ctx.fillStyle='#000';ctx.fillRect(0,0,W,64);ctx.fillStyle=C.line;ctx.fillRect(0,60,W,4);
+  text('DATA QUALITY CHECK',32,42,20,C.gold,'left',PIX);text(right,W-32,42,16,C.dim,'right',PIX)}
+
+/* ---------- scenes ---------- */
+let si=0,pt0=performance.now();
+function sceneTitle(t){
+  shadowText('STAGE 2',W/2,150,20,C.dim,'center',PIX);
+  shadowText('DATA QUALITY',W/2,250,52,C.gold,'center',PIX);
+  shadowText('CHECK',W/2,326,52,C.gold,'center',PIX);
+  text(`共 ${R.length} 題，三筆資料裡有一筆是髒資料`,W/2,400,30,C.fg,'center',DOT);
+  text('WHERE is_valid = FALSE ?',W/2,446,18,C.teal,'center',PIX);
+  // round chips
+  ctx.font=`26px ${DOT}`;const cw=R.map(r=>ctx.measureText(r.name).width+100),gap=28;
+  let x=W/2-(cw.reduce((a,b)=>a+b,0)+gap*(R.length-1))/2;
+  R.forEach((r,q)=>{if(t>.4+q*.25){ctx.fillStyle=C.line;ctx.fillRect(x,486,cw[q],48);ctx.fillStyle='#000';ctx.fillRect(x+4,490,cw[q]-8,40);
+    text(`Q${q+1}`,x+18,520,16,C.gold,'left',PIX);text(r.name,x+70,521,26,C.fg,'left',DOT)}x+=cw[q]+gap});
+  if(Math.floor(t/.45)%2===0)shadowText('PRESS ENTER',W/2,604,20,C.fg,'center',PIX);
+  drawAmy(110,430,9,{blink:(t%3)<.12,lens:true});
+  flash(t<.3?.7-t*2.3:0);
+}
+const ROW={x:40,w:1200,y0:186,h:146,gap:14};
+function rowY(i){return ROW.y0+i*(ROW.h+ROW.gap)}
+function drawTable(t,mode,q){
+  const {facts,fake,name,table}=R[q];
+  headerBar(`Q${q+1}/${R.length} · ${mode==='vote'?'GUESS':'SCANNING'}`);
+  ctx.font=`30px ${DOT}`;const nw=ctx.measureText(name).width+28;
+  ctx.fillStyle=C.gold;ctx.fillRect(ROW.x,80,nw,42);text(name,ROW.x+14,112,30,'#12101f','left',DOT);
+  text(mode==='vote'?'你覺得哪一筆是髒資料？請舉手！':'執行資料驗證中…',ROW.x+nw+20,112,30,C.fg,'left',DOT);
+  text(`SELECT row_id, fact, is_valid FROM ${table}`,ROW.x,146,13,C.dim,'left',PIX);
+  const st=t;
+  facts.forEach((f,i)=>{
+    const y=rowY(i),isFake=i===fake;
+    const judge=mode==='scan'&&st>=1.25+i*1.3;
+    const glitch=judge&&isFake&&st<1.25+i*1.3+.9;
+    const jx=glitch?(Math.random()-.5)*14:0;
+    ctx.save();ctx.translate(jx,0);
+    const border=judge?(isFake?C.red:C.green):C.line;
+    panel(ROW.x,y,ROW.w,ROW.h,null,border);
+    if(judge&&isFake){ctx.fillStyle=`rgba(255,93,115,${glitch&&Math.floor(st*16)%2?.35:.16})`;ctx.fillRect(ROW.x+4,y+4,ROW.w-8,ROW.h-8)}
+    if(judge&&!isFake){ctx.fillStyle='rgba(126,231,135,.08)';ctx.fillRect(ROW.x+4,y+4,ROW.w-8,ROW.h-8)}
+    ctx.fillStyle='#000';ctx.fillRect(ROW.x+20,y+20,84,ROW.h-40);
+    text('ROW',ROW.x+62,y+62,12,C.dim,'center',PIX);text(String(i+1),ROW.x+62,y+108,32,C.gold,'center',PIX);
+    const lines=wrap(f,880,26).slice(0,3),lh=36,ty=y+ROW.h/2-(lines.length-1)*lh/2+9;
+    lines.forEach((ln,k)=>{
+      if(glitch&&k===Math.floor(st*10)%lines.length){text(ln,ROW.x+132+6,ty+k*lh,26,C.teal,'left',DOT);text(ln,ROW.x+132-6,ty+k*lh,26,C.red,'left',DOT)}
+      text(ln,ROW.x+132,ty+k*lh,26,judge&&isFake?'#ffd6dc':C.fg,'left',DOT)});
+    const ix=1080;text('is_valid',ix,y+40,11,C.dim,'left',PIX);
+    ctx.fillStyle='#000';ctx.fillRect(ix,y+54,136,60);
+    if(!judge){const bl=mode==='vote'?Math.floor(t*2.2+i)%2:1;text('?',ix+68,y+98,28,bl?C.gold:C.dim,'center',PIX)}
+    else{const p=easeOut((st-(1.25+i*1.3))/.25),sc=2-p;ctx.save();ctx.translate(ix+68,y+84);ctx.scale(sc,sc);
+      text(isFake?'FALSE':'TRUE',0,10,isFake?20:22,isFake?C.red:C.green,'center',PIX);ctx.restore()}
+    if(judge&&isFake){ctx.save();ctx.translate(ROW.x+150,y+6);ctx.rotate(-.06);ctx.fillStyle=C.red;ctx.fillRect(-8,-24,236,36);text('DIRTY DATA!',110,4,16,'#fff','center',PIX);ctx.restore()}
+    ctx.restore();
+    if(mode==='scan'&&st>=.5+i*1.3&&st<.9+i*1.3+.35){
+      const p=clamp((st-(.5+i*1.3))/.75),by=y+p*ROW.h;
+      ctx.fillStyle='rgba(79,209,197,.18)';ctx.fillRect(ROW.x,y,ROW.w,by-y);
+      ctx.fillStyle=C.teal;ctx.fillRect(ROW.x-10,by-3,ROW.w+20,6);ctx.fillStyle='rgba(79,209,197,.35)';ctx.fillRect(ROW.x-10,by-12,ROW.w+20,24);
+    }
+  });
+  if(mode==='vote'&&Math.floor(t/.6)%2===0)text('▶ ROW 1、2、3，哪一筆是假的？',W/2,708,16,C.gold,'center',DOT);
+  else if(mode==='scan'&&t>.9+3*1.3+.4&&Math.floor(t/.45)%2===0)text(q<R.length-1?`▶ 下一題：${R[q+1].name}`:'▶ 下一步：清除髒資料',W/2,708,16,C.gold,'center',DOT);
+}
+
+function sceneDone(t){
+  headerBar('CLEANED');
+  for(const [x,y,s,c,p] of conf){ctx.fillStyle=c;ctx.fillRect(Math.floor(x+Math.sin(t*2+p)*20),Math.floor((y+t*120)%H),s*2,s*2)}
+  const jump=Math.abs(Math.sin(t*4))*26*Math.max(0,1-t/2.5);
+  drawAmy(110,190-jump,15,{blink:(t%3)<.12,lens:true});
+  const n=R.length,lh=36,ph=96+n*lh+60;
+  panel(500,96,740,ph,'QUERY');
+  R.forEach((r,q)=>text(typed(`DELETE FROM ${r.table} WHERE row_id = ${r.fake+1};`,t,.2+q*.5,.5),530,150+q*lh,16,C.fg,'left',PIX));
+  const t1=.3+n*.5;
+  if(t>t1)text(typed(`✔ ${n} rows deleted. 0 errors.`,t,t1,.5),530,150+n*lh+12,16,C.green,'left',PIX);
+  if(t>t1+.6)text(`${n} 題你猜對了幾題？`,530,150+n*lh+60,24,C.gold,'left',DOT);
+  const by=96+ph+24;
+  if(t>t1+1){
+    const lines=wrap(DATA.outro,680,24),bh=lines.length*36+30;
+    ctx.fillStyle='#000';ctx.fillRect(500,by,740,bh);ctx.fillStyle=C.red;ctx.fillRect(500,by,8,bh);
+    lines.forEach((ln,k)=>text(ln,530,by+42+k*36,24,'#ffb3bf','left',DOT));
+  }
+  if(t>t1+1.5){const sc=Math.min(1,(t-t1-1.5)*4);ctx.save();ctx.translate(500,598);ctx.scale(sc,sc);shadowText('資料清洗完成！',0,0,48,C.fg,'left',DOT);ctx.restore()}
+  if(t>t1+2)text('謝謝大家幫忙 QA，以後請多指教！',500,652,24,C.teal,'left',DOT);
+  flash(t<.3?.7-t*2.3:0);
+}
+
+/* ---------- sound ---------- */
+let fired=new Set();
+function sfxScan(t,q){
+  const {facts,fake}=R[q];
+  facts.forEach((_,i)=>{
+    const a=.5+i*1.3,j=1.25+i*1.3;
+    if(t>=a&&!fired.has('s'+i)){fired.add('s'+i);for(let k=0;k<6;k++)blip(500+k*90,.04,k*.11,'triangle',.04)}
+    if(t>=j&&!fired.has('j'+i)){fired.add('j'+i);i===fake?(blip(140,.35,0,'sawtooth',.08),blip(110,.4,.12,'square',.06)):seq([880,1175],.07)}
+  });
+}
+function frame(now){
+  const t=(now-pt0)/1000;
+  bg(now/1000);
+  const sc=SCENES[si];
+  if(sc.k==='title')sceneTitle(t);else if(sc.k==='done')sceneDone(t);else drawTable(t,sc.k,sc.q);
+  if(sc.k==='scan')sfxScan(t,sc.q);
+  scan();
+}
+function go(i,quiet){
+  si=clamp(i,0,SCENES.length-1);pt0=performance.now();fired=new Set();if(quiet)return;audio();
+  const k=SCENES[si].k;
+  if(k==='title')seq([523,659,784,1046]);
+  if(k==='vote')seq([523,659],.08);
+  if(k==='scan')blip(660,.06);
+  if(k==='done')seq([523,659,784,1046,784,1046],.12,.14);
+}
+return {fontText,frame,go,names:SCENES.map(s=>s.name)};
+})();
+
+/* ================= controller: checkpoints, Enter moves to the next ================= */
+// 0 title (waits) · 1 intro animation → player card · 2.. STAGE 2 scenes (title, each round's question + answer, final)
+const STEP_NAMES=['起始畫面','創建角色',...dqc.names];
+const LAST=STEP_NAMES.length-1;
+const $id=id=>document.getElementById(id);
+const nextBtn=$id('next'),tab1=$id('tab1'),tab2=$id('tab2');
+$id('dots').innerHTML='<i></i>'.repeat(STEP_NAMES.length);
+let step=0;
+
+function ui(){
+  const s1=step<2;
+  tab1.setAttribute('aria-selected',s1);tab2.setAttribute('aria-selected',!s1);
+  nextBtn.disabled=step===1&&intro.busy;
+  nextBtn.textContent=nextBtn.disabled?'播放中…':step===LAST?'✔ 完成':'下一步 ▶';
+  $id('status').innerHTML=`<b>${step+1}/${LAST+1}</b> ${STEP_NAMES[step]}`;
+  [...$id('dots').children].forEach((d,i)=>d.className=i<step?'done':i===step?'on':'');
+}
+intro.onChange=ui;
+
+function goStep(n){
+  n=clamp(n,0,LAST);
+  if(n===0)intro.toTitle();
+  else if(n===1){if(step===0)intro.play();else intro.toCard()}
+  else dqc.go(n-2);
+  step=n;ui();
+}
+function advance(){
+  if(step===1&&intro.busy)return; // let the intro animation finish
+  if(step<LAST)goStep(step+1);
+}
+function back(){if(step>0)goStep(step-1)}
+function reset(){goStep(0)}
+function toggleFS(){
+  const c=$id('cab');
+  try{if(document.fullscreenElement){document.exitFullscreen()}else{const p=c.requestFullscreen?c.requestFullscreen():null;p&&p.catch&&p.catch(()=>{})}}catch(e){}
+}
+const focusStage=()=>cv.focus({preventScroll:true});
+const btn=(id,fn)=>{$id(id).onclick=()=>{fn();focusStage()}};
+btn('next',advance);btn('prev',back);btn('reset',reset);btn('fs',toggleFS);
+btn('tab1',()=>{if(step>=2)goStep(1)});btn('tab2',()=>{if(step<2)goStep(2)});
+$id('snd').onclick=e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'♪ ON':'♪ OFF';e.currentTarget.setAttribute('aria-pressed',soundOn);focusStage()};
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;
+  if(e.target.tagName==='BUTTON'&&(e.key===' '||e.key==='Enter'))return;
+  if(e.key==='Enter'||e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();advance()}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();back()}
+  else if(e.key==='r'||e.key==='R')reset();
+  else if(e.key==='f'||e.key==='F')toggleFS();
+});
+
+async function loadFonts(){
+  const txt=intro.fontText()+dqc.fontText();
+  try{await Promise.all([document.fonts.load('24px "DotGothic16"',txt),document.fonts.load('24px "Press Start 2P"','ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=_.:;*/?!▶✔')])}catch(e){}
+}
+
+function loop(now){
+  if(step<2)intro.tick(now);else dqc.frame(now);
+  requestAnimationFrame(loop);
+}
+
+if(/stage-?2/i.test(location.hash)){step=2;dqc.go(0,true)}
+ui();
+loadFonts();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
