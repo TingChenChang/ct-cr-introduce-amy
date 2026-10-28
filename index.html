@@ -105,9 +105,9 @@ const DATA={
   // STAGE 1 · 角色資料
   name:'張庭禎 Amy', mbti:'ISFJ', zodiac:'獅子座', cls:'資料分析師', home:'新北', food:'韓式料理',
   hobbies:['追劇','旅遊'], music:'KPOP',
-  hairstyle:3,            // 0 短髮 · 1 長髮 · 2 帽子 · 3 短髮中分劉海
+  hairstyle:0,            // 0 短髮 · 1 長髮 · 2 帽子 · 3 爆炸頭
   glasses:true,           // 黑框眼鏡
-  hair:'#2a1f1c', skin:'#f1c7a0', shirt:'#c9ccd3', tee:'#f7f7f5', pants:'#1b1b1f',  // 淺灰襯衫 · 白T · 黑褲
+  hair:'#2a1f1c', skin:'#f1c7a0', shirt:'#c9ccd3', tee:'#f7f7f5', pants:'#1b1b1f',  // 灰色格紋襯衫（扣起來）· 黑褲
   fact:'最近一週完食 47 集美劇 <Hacks>，1-5 季都非常好看，真心推薦！！！',
   // GOD MODE 屬性點：名稱 · 點數 1–5 · 上帝的台詞
   stats:[
@@ -119,16 +119,16 @@ const DATA={
     {n:'社交',  v:1,c:'社交點數…剛好用完了，先給 1'}],
   // STAGE 2 · 兩真一假，依序出題。每題三句，fake = 假的那一句（0 = 第一句）
   rounds:[
-    {name:'旅遊篇', table:'amy.travel', fake:1, facts:[
-      '第一次搭長途飛機，才到第一個轉機點，就弄丟護照跟一半現金',
-      '下班正要回家，朋友打來問「你到機場了嗎？」才發現我記錯出國日期',
-      '因為跟團遇到太雷的導遊，團裡年紀最小的我自動被升級為副導遊']},
     {name:'追劇篇', table:'amy.dramas', fake:0, facts:[
       '為了不被暴雷《單身即地獄》大結局，請假半天回家等上線',
       '看完《黑白大廚》買了多功能食材處理器，開箱 5 秒就刮到手血流如注',
-      '因為看《Hacks》太感動，在捷運上啜泣哭到口罩濕透']},
+      '在捷運上看《Hacks》太感動，哭到口罩濕透']},
+    {name:'旅遊篇', table:'amy.travel', fake:1, facts:[
+      '第一次飛長途才到第一個轉機點，就弄丟護照跟一半現金',
+      '下班正要回家，朋友打來問「你要去機場了嗎？」才發現記錯出國日期',
+      '跟團遇到太雷的導遊，團裡年紀最小的我自動被叔叔阿姨升級為副導遊']},
   ],
-  outro:'我叫 Amy，今天結束你可能不記得我是誰沒關係，但請記得《Hacks》真的很好看！',
+  outro:'我叫 Amy，今天結束你可能不記得我是誰沒關係，但請記得...《Hacks》真的很好看！',
 };
 
 
@@ -149,6 +149,24 @@ const BASE=[
 '..TTTTTTTTTTTT..','.TTTTTTTTTTTTTT.','.SSTTTTTTTTTTSS.','.SSTTTTTTTTTTSS.',
 '.SS.TTTTTTTT.SS.','....TTTTTTTT....','....PPPPPPPP....','....PPP..PPP....',
 '....PPP..PPP....','....PPP..PPP....','...BBBB..BBBB...','...BBBB..BBBB...'];
+/* 扣起來的格紋襯衫：格紋 + 領子（像素格），門襟 / 鈕扣 / 胸前口袋（細線疊上去） */
+function shirtGrid(g){
+  for(let r=11;r<=17;r++)for(let c=0;c<16;c++){if(g[r][c]!=='T')continue;
+    const v=c===4||c===11,h=r===13||r===16;if(v&&h)g[r][c]='K';else if(v||h)g[r][c]='G'}
+  for(let c=5;c<=10;c++)g[11][c]='c';g[12][6]=g[12][9]='c';
+}
+const shirtPal=sh=>({T:sh,G:shade(sh,.72),K:shade(sh,.45),c:shade(sh,1.12)});
+function shirtDetails(x,y,s,sh){
+  const k=Math.max(2,Math.round(s*.2));
+  ctx.fillStyle=shade(sh,.5);ctx.fillRect(x+8*s-k/2,y+11.4*s,k,6.6*s);   // 門襟
+  ctx.fillRect(x+7.4*s,y+11*s,1.2*s,k);                                     // 領口
+  ctx.fillRect(x+5*s,y+12*s-k,s,k);ctx.fillRect(x+10*s,y+12*s-k,s,k);         // 領子下緣
+  ctx.fillRect(x+6*s,y+13*s-k,s,k);ctx.fillRect(x+9*s,y+13*s-k,s,k);
+  const px=x+9.3*s,py=y+13.3*s,pw=1.6*s,ph=1.8*s;                           // 左胸口袋
+  ctx.fillRect(px,py,pw,k);ctx.fillRect(px,py,k,ph);ctx.fillRect(px+pw-k,py,k,ph);ctx.fillRect(px,py+ph-k,pw,k);
+  ctx.fillStyle='#24242a';const b=Math.max(3,Math.round(s*.42));
+  for(const r of [11.7,13.4,15.1,16.8])ctx.fillRect(x+8*s-b/2,y+r*s,b,b);   // 鈕扣
+}
 
 let ac=null,soundOn=true;
 function audio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(e){ac=null}}
@@ -160,20 +178,26 @@ const intro=(()=>{
 const DUR=42;
 const TL={load:3,ava:5,stat:9.2,conf:15.5,meme:18,mstat:19.2,mstep:1.7,stamp:29.6,join:31,card:35.5};
 const D=DATA;let EV=[];
-const fontText=()=>JSON.stringify(D)+'確認建立角色？請多指教！上帝在創造我的時候：哈啾點數不足完成先出貨有再說品質大概可以總點數剩下的請自己練屬性雷達短髮中分劉海長髮帽子黑框眼鏡墨鏡耳機花圈無襯衫配件載入';
+const fontText=()=>JSON.stringify(D)+'確認建立角色？請多指教！上帝在創造我的時候：哈啾點數不足完成先出貨有再說品質大概可以總點數剩下的請自己練屬性雷達短髮長髮帽子爆炸頭黑框眼鏡墨鏡耳機花圈無襯衫配件載入';
 
 /* ---------- sprites ---------- */
 function playerGrid(style,blink){
   const g=BASE.map(r=>r.padEnd(16,'.').split(''));
   if(style===1){for(let r=4;r<=12;r++)for(const c of [1,2,13,14])if(g[r][c]==='.'||g[r][c]==='H')g[r][c]='H'}
   if(style===2){for(let r=0;r<2;r++)for(let c=0;c<16;c++)if(g[r][c]==='H')g[r][c]='C';for(let c=1;c<=14;c++)g[2][c]='C'}
-  if(style===3){ // short hair, center-parted bangs
+  if(style===0){ // short hair, center-parted bangs
     for(let c=3;c<=12;c++)if(c!==7&&c!==8)g[3][c]='H';
     for(const c of [3,4,11,12])g[4][c]='H';
     g[2][7]='h';g[2][8]='h';
   }
-  g[11][5]=g[11][6]=g[11][9]=g[11][10]='L';g[11][7]=g[11][8]='S';g[12][6]=g[12][9]='L';
-  for(let r=12;r<=17;r++)g[r][7]=g[r][8]='W'; // open shirt shows the white tee
+  if(style===3){ // afro: big round puff around the head
+    const span=[[2,13],[1,14],[0,15],[0,15]];
+    span.forEach(([a,b],r)=>{for(let c=a;c<=b;c++)g[r][c]='H'});
+    for(let r=4;r<=8;r++)for(const c of [0,1,2,13,14,15])g[r][c]='H';
+    for(const c of [1,2,13,14])g[9][c]='H';
+    for(const [r,c] of [[0,5],[1,9],[1,3],[2,12],[2,6],[4,1],[6,14],[7,0],[8,13]])g[r][c]='h';
+  }
+  shirtGrid(g); // buttoned plaid shirt
   if(blink)for(const r of g)for(let c=0;c<16;c++)if(r[c]==='E')r[c]='S';
   return g;
 }
@@ -187,9 +211,13 @@ function drawGrid(g,pal,x,y,s,sil){for(let r=0;r<g.length;r++)for(let c=0;c<g[r]
 function drawSprite(x,y,s,o={}){
   const g=playerGrid(o.style??D.hairstyle,o.blink);
   const hair=o.hair||D.hair,shirt=o.shirt||D.shirt;
-  const pal={H:hair,h:shade(hair,1.7),S:D.skin,E:'#1a1626',M:'#c0485a',T:shirt,L:'#f4f6fb',K:shade(shirt,.55),W:D.tee,P:D.pants,B:'#0a0a0d',C:shade(shirt,.7)};
+  const pal={H:hair,h:shade(hair,1.7),S:D.skin,E:'#1a1626',M:'#c0485a',L:'#f4f6fb',W:D.tee,P:D.pants,B:'#0a0a0d',C:shade(shirt,.7),...shirtPal(shirt)};
+  if((o.style??D.hairstyle)===3){ // afro puff rises above the sprite box
+    ctx.fillStyle=o.sil||hair;ctx.fillRect(x+4*s,y-2*s,8*s,s);ctx.fillRect(x+3*s,y-s,10*s,s);
+  }
   drawGrid(g,pal,x,y,s,o.sil);
   if(o.sil)return;
+  shirtDetails(x,y,s,shirt);
   if(o.glasses??D.glasses){
     const k=Math.max(2,Math.round(s*.22));ctx.fillStyle='#0b0b0e';
     for(const ec of [5,10]){const lx=x+(ec-1)*s+s*.35,ly=y+4*s+s*.45,lw=3*s-s*.7,lh=3*s+s*.1;
@@ -245,7 +273,7 @@ function sceneLoad(t){
 }
 
 /* ---------- scene: avatar + status + confirm ---------- */
-const HAIRN={0:'短髮',1:'長髮',2:'帽子',3:'中分劉海'};
+const HAIRN={0:'短髮',1:'長髮',2:'帽子',3:'爆炸頭'};
 function chips(x,y,list,t,size=20){
   list.forEach((s,i)=>{if(!s)return;const font=i===0?PIX:DOT,sz=i===0?size:size+4;ctx.font=`${sz}px ${font}`;const w=ctx.measureText(s).width;
     ctx.fillStyle=i===0?C.teal:C.gold;ctx.fillRect(x,y,w+22,38);text(s,x+11,y+29,sz,'#12101f','left',font);x+=w+36});
@@ -273,7 +301,7 @@ function sceneCreate(t){
     text(lab,76,y,14,act?C.gold:C.dim,'left',PIX);
     text('◀',250,y,18,bl?C.gold:C.dim,'left',DOT);
     if(val!=null)text(val,345,y,22,C.fg,'center',DOT);
-    else{ctx.fillStyle=shirt;ctx.fillRect(300,y-24,90,30);ctx.fillStyle='#f4f6fb';ctx.fillRect(330,y-24,10,12);ctx.fillRect(350,y-24,10,12)}
+    else{ctx.fillStyle=shirt;ctx.fillRect(300,y-24,90,30);ctx.fillStyle=shade(shirt,.5);ctx.fillRect(344,y-24,2,30);ctx.fillStyle='#24242a';for(const by of [-20,-11,-2])ctx.fillRect(342,y+by,6,6)}
     text('▶',430,y,18,bl?C.gold:C.dim,'left',DOT);
   });
   panel(568,96,676,580,'STATUS');
@@ -481,10 +509,11 @@ function drawAmy(x,y,s,o={}){
   const A=intro.D;
   const g=BASE.map(r=>r.split(''));
   for(let c=3;c<=12;c++)if(c!==7&&c!==8)g[3][c]='H';for(const c of [3,4,11,12])g[4][c]='H';g[2][7]=g[2][8]='h';
-  g[11][5]=g[11][6]=g[11][9]=g[11][10]='L';g[11][7]=g[11][8]='S';g[12][6]=g[12][9]='L';for(let r=12;r<=17;r++)g[r][7]=g[r][8]='W';
+  shirtGrid(g);
   if(o.blink)for(const r of g)for(let c=0;c<16;c++)if(r[c]==='E')r[c]='S';
-  const pal={H:A.hair,h:shade(A.hair,1.7),S:A.skin,E:'#1a1626',M:'#c0485a',T:A.shirt,L:'#f4f6fb',K:shade(A.shirt,.55),W:A.tee,P:A.pants,B:'#0a0a0d'};
+  const pal={H:A.hair,h:shade(A.hair,1.7),S:A.skin,E:'#1a1626',M:'#c0485a',L:'#f4f6fb',W:A.tee,P:A.pants,B:'#0a0a0d',...shirtPal(A.shirt)};
   for(let r=0;r<g.length;r++)for(let c=0;c<16;c++){const k=g[r][c];if(k==='.')continue;ctx.fillStyle=pal[k];ctx.fillRect(x+c*s,y+r*s,s,s)}
+  shirtDetails(x,y,s,A.shirt);
   const k=Math.max(2,Math.round(s*.22));ctx.fillStyle='#0b0b0e';
   for(const ec of [5,10]){const lx=x+(ec-1)*s+s*.35,ly=y+4*s+s*.45,lw=3*s-s*.7,lh=3*s+s*.1;ctx.fillRect(lx,ly,lw,k);ctx.fillRect(lx,ly+lh-k,lw,k);ctx.fillRect(lx,ly,k,lh);ctx.fillRect(lx+lw-k,ly,k,lh)}
   ctx.fillRect(x+6.65*s,y+5.2*s,2.7*s,k);ctx.fillRect(x+3*s,y+5.2*s,1.35*s,k);ctx.fillRect(x+11.65*s,y+5.2*s,1.35*s,k);
